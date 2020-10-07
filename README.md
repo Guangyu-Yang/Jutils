@@ -1,4 +1,6 @@
 # Jutils
+
+## Usage:
 ```
 ####### test pairwise comparison
 result_dir='path/to/MntJULiP_results_dir'
