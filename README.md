@@ -1,7 +1,7 @@
 # Jutils
 Jutils alpha version
 
-Jutils is a visuliation tools kits for showing alternative splicing events. It support vizualizing results generated from AS event detectors: MntJULiP, LeafCutter, MAJIQ and rMATs.
+Jutils is a visualization tools kits for showing alternative splicing events. It support vizualizing results generated from AS event detectors: MntJULiP, LeafCutter, MAJIQ and rMATs.
 
 Jutils contains 4 components,
 (1) Convert program results to a unified tab saperated file (TSV)
