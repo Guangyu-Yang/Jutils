@@ -3,10 +3,10 @@ Jutils alpha version
 
 Jutils is a visualization tools kits for showing alternative splicing events. It support vizualizing results generated from AS event detectors: MntJULiP, LeafCutter, MAJIQ and rMATs.
 
-Jutils contains 4 components,
-(1) Convert program results to a unified tab saperated file (TSV)
-(2) Receive input of the TSV file (from (1)) and plot the heatmaps
-(3) Receive input of the TSV file or bam files, and plot the sashimi plot for the given region that are interested
+Jutils contains 4 components    
+(1) Convert program results to a unified tab saperated file (TSV)    
+(2) Receive input of the TSV file (from (1)) and plot the heatmaps    
+(3) Receive input of the TSV file or bam files, and plot the sashimi plot for the given region that are interested    
 (4) Receive input of the TSV files and plot the Venn Diagram with predicted AS genes.
 
 ## Usage by examples
