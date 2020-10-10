@@ -11,6 +11,7 @@ This program is free software: you can redistribute it and/or modify it under th
 - [What is Jutils?](#what-is-jutils)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Input/Output](#inputoutput)
 - [Support](#support)
 
 ### <a name="what-is-jutils"></a> What is Jutils?
@@ -46,12 +47,12 @@ pip install --user pandas numpy seaborn matplotlib
 result_dir='path/to/MntJULiP_results_dir'
 python3 jutils.py convert-results --mntjulip-dir ${result_dir}
 
-# heatmap: DSR events with aggregate by groups/clusters
+# heatmap: DSR events aggregated by groups/clusters
 python3 jutils.py heatmap --tsv-file 'mntjulip_DSR_results.tsv' \
                           --meta-file 'meta_file.tsv' \
                           --dpsi 0.3 --p-value 0.05 --q-value 0.05 --aggregate
 
-# heatmap: DSR events without aggregate
+# heatmap: DSR events without aggregation
 python3 jutils.py heatmap --tsv-file 'mntjulip_DSR_results.tsv' \
                           --meta-file 'meta_file.tsv' \
                           --dpsi 0.3 --p-value 0.05 --q-value 0.05
@@ -68,7 +69,7 @@ result_dir='path/to/MntJULiP_results_dir'
 python3 jutils.py convert-results --mntjulip-dir ${result_dir}
 
 
-# heatmap: DSR without aggregate
+# heatmap: DSR without aggregation
 python3 jutils.py heatmap --tsv-file 'mntjulip_DSR_results.tsv' \
                           --meta-file 'meta_file_4.tsv' \
                           --dpsi 0.3 --p-value 0.05 --q-value 0.05
@@ -78,7 +79,9 @@ python3 jutils.py heatmap --tsv-file 'mntjulip_DSA_results.tsv' \
                           --meta-file 'meta_file_4.tsv' \
                           --p-value 0.05 --q-value 0.05 --avg 200
 ```
-## Input files
+
+### <a name="inputoutput"></a> Input/Output
+#### Input files
 meta-file: a TAB ('\t') seperated file that contains sample name and condition, e.g.
 ```
 s1  ctrl
