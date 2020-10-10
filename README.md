@@ -48,3 +48,13 @@ python3 jutils.py heatmap --tsv-file 'mntjulip_DSA_results.tsv' \
                           --meta-file 'meta_file_4.tsv' \
                           --p-value 0.05 --q-value 0.05 --avg 200
 ```
+## Input files
+meta-file: a TAB ('\t') seperated file that contains sample name and condition, e.g.
+```
+s1  ctrl
+s2  ctrl
+s3  case
+s4  case
+```
+
+
