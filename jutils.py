@@ -1,9 +1,10 @@
 from pathlib import Path
 import sys, argparse
 
-from convert_results_utils import convert_leafcutter_results, convert_rmats_results, convert_mntjulip_results
+from convert_results_utils import convert_leafcutter_results, convert_rmats_results, convert_mntjulip_results, convert_majiq_results
 from venn_diagram_utils import plot_venn_diagram
 from heatmap_utils import plot_heatmap
+from sashimi_utils import sashimi_plot_with_bams
 
 
 def get_arguments():
@@ -14,6 +15,7 @@ def get_arguments():
     r_parser.add_argument('--leafcutter-dir', type=str, help='The directory contains the leafcutter_ds_cluster_significance.txt, leafcutter_ds_effect_sizes.txt and *.counts.gz')
     r_parser.add_argument('--rmat-dir', type=str, help='The directory contains the *.ReadsOnTargetAndJunctionCounts.txt and *.JunctionCountOnly.txt.')
     r_parser.add_argument('--mntjulip-dir', type=str, help='The directory contains diff_spliced_introns.txt, diff_spliced_groups.txt, diff_introns.txt and intron_data.txt')
+    r_parser.add_argument('--majiq-dir', type=str, help='The directory contains *.deltapsi.tsv')
     r_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
 
     v_parser = subparser.add_parser('venn-diagram', help='')
@@ -34,6 +36,11 @@ def get_arguments():
     h_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
 
     s_parser = subparser.add_parser('sashimi', help='')
+    h_parser.add_argument('--bam-list', type=str, help='A BAM files list')
+    h_parser.add_argument('--coordinate', type=str, help='coordinate: e.g. chr1:123456-234567')
+    h_parser.add_argument('--gtf', type=str, help='A GTF file')
+    h_parser.add_argument('--shrink', action='store_true', default=False, help='shrink region.')
+    s_parser.add_argument("--min-coverage", type=int, default=1, help='minimum coverage to ignore')
     s_parser.add_argument("--strand", type=str, default="both",
         help="Only for --strand other than 'NONE'. Choose which strand to plot: <both> <plus> <minus> [default=%(default)s]")
     if len(sys.argv) < 2:
@@ -52,6 +59,8 @@ def run_convert_results_module(args):
         convert_leafcutter_results(Path(args.leafcutter_dir), out_dir)
     if args.rmat_dir:
         convert_rmats_results(Path(args.rmat_dir), out_dir)
+    if args.majiq_dir:
+        convert_majiq_results(Path(args.majiq_dir), out_dir)
     if not (args.mntjulip_dir or args.leafcutter_dir or args.rmat_dir):
         raise Exception('Sould specify at least one of the path of a program result folder!')
 
@@ -70,6 +79,12 @@ def run_heatmap_module(args):
                  args.q_value, args.dpsi, args.fold_change, args.avg, args.aggregate)
 
 
+def run_sashimi_module(args):
+    if args.bam_list:
+        sashimi_plot_with_bams(args.bam_list, args.coordinates, args.gtf, args.shrink,
+                           args.strand, args.min_coverage)
+
+
 def main():
     args = get_arguments()
 
@@ -81,6 +96,10 @@ def main():
 
     if args.command == 'heatmap':
         run_heatmap_module(args)
+
+    if args.command == 'sashimi':
+        run_sashimi_module(args)
+
 
 if __name__ == "__main__":
     main()

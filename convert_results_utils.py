@@ -1,13 +1,54 @@
-from collections import defaultdict
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 import numpy as np
-import gzip
+import gzip, os
 
 from pathlib import Path
 
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+
+def convert_majiq_results(data_dir, out_dir):
+    infile = None
+    for file in os.listdir(data_dir):
+        if file.endswith(".tsv"):
+            infile = file
+            break
+
+    if not infile:
+        raise FileNotFoundError(f'Error: the .tsv file not found in {data_dir}!')
+
+    with open(data_dir / infile, 'r') as f:
+        lines = f.readlines()
+
+    intron_info_dict = OrderedDict()
+    conds = [f'psi({c[:-7]})' for c in lines[0].strip().split('\t')[6:8]]
+    for line in lines[1:]:
+        items = line.strip().split('\t')
+        gene_name = items[0]
+        lsv_id = items[2]
+        _chr, strand = items[15], items[16]
+
+        dpsis = items[3].split(';')
+        intron_coords = [v.split('-') for v in items[17].split(';')]
+        cond1_psis = items[6].split(';')
+        cond2_psis = items[7].split(';')
+
+        i = 1
+        for dpsi, (start, end), psi1, psi2 in zip(dpsis, intron_coords, cond1_psis, cond2_psis):
+            start, end = int(start), int(end)
+            dpsi = float(dpsi)
+            intron_info_dict[(_chr, start, end, lsv_id)] = f'{gene_name}\t{lsv_id}\ti{i:03d}\tintron\t{_chr}:{start}-{end}\t{strand}\t.\t.\t{dpsi:.6g}\t.\t.\t.\t{psi1}\t{psi2}'
+            i += 1
+
+    out_buffer = 'GeneName\tGroupID\tFeatureElement\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\t' + '\t'.join(conds)
+    file = out_dir / 'majiq_results.tsv'
+    with open(file, 'w') as f:
+        f.write('# majiq\n')
+        f.write(out_buffer + '\n')
+        for info in intron_info_dict.values():
+            f.write(info + '\n')
 
 
 def convert_leafcutter_results(data_dir, out_dir):
@@ -39,7 +80,7 @@ def convert_leafcutter_results(data_dir, out_dir):
     intron_info_dict = OrderedDict()
     intron_info_psis_dict = {}
     prev_cluster, i = None, 0
-    conds = lines[0].strip().split('\t')[2:4]
+    conds = [f'psi({c})' for c in lines[0].strip().split('\t')[2:4]]
     for line in lines[1:]:
         # intron  logef   case    control deltapsi
         intron_info, _, psi1, psi2, dpsi = line.strip().split('\t')
@@ -79,8 +120,8 @@ def convert_leafcutter_results(data_dir, out_dir):
     with open(file, 'w') as f:
         f.write('# leafcutter\n')
         f.write(out_buffer + '\n')
-        for intron_info in intron_info_dict:
-            f.write(intron_info_dict[intron_info] + '\n')
+        for info in intron_info_dict.values():
+            f.write(info + '\n')
 
 
 def convert_rmats_results(data_dir, out_dir):
@@ -242,7 +283,7 @@ def convert_mntjulip_DSR_results(data_dir, out_dir):
     with open(file, 'w') as f:
         f.write('# mntjulip DSR\n')
         f.write(out_buffer + '\n')
-        for intron_info in intron_info_dict:
+        for info in intron_info_dict.values():
             f.write(intron_info_dict[intron_info] + '\n')
 
 
@@ -299,5 +340,5 @@ def convert_mntjulip_DSA_results(data_dir, out_dir):
     with open(file, 'w') as f:
         f.write('# mntjulip DSA\n')
         f.write(out_buffer + '\n')
-        for intron in intron_info_dict:
-            f.write(intron_info_dict[intron] + '\n')
+        for info in intron_info_dict.values():
+            f.write(info + '\n')
