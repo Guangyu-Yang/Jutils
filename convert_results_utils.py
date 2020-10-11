@@ -284,7 +284,7 @@ def convert_mntjulip_DSR_results(data_dir, out_dir):
         f.write('# mntjulip DSR\n')
         f.write(out_buffer + '\n')
         for info in intron_info_dict.values():
-            f.write(intron_info_dict[intron_info] + '\n')
+            f.write(info + '\n')
 
 
 def convert_mntjulip_DSA_results(data_dir, out_dir):
