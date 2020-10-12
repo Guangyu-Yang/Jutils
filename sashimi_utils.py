@@ -3,10 +3,120 @@ import sys, re, copy, os, codecs
 from collections import OrderedDict
 
 
+def sashimi_polt_without_bams(tsv_file, meta_file, gtf, group_id, shrink=False, min_coverage=1):
+    with open(tsv_file, 'r') as f:
+        lines = f.readlines()
 
+    coord, strand = None, None
+    for line in lines:
+        if line.startswith('#') or line.startswith('GeneName'):
+            continue
+        #GeneName    GroupID FeatureElement  FeatureType FeatureLabel    strand  p-value q-value dPSI    ReadCount1  ReadCount2  PSI
+        items = line.strip().split('\t')
+        _gene_name, _group_id, label, _strand = items[0], items[1], items[4], items[5]
+        if _group_id == group_id:
+            strand = _strand
+            chr, start, end = parse_coordinates(label)
+            if coord:
+                coord[1], coord[2] = min(start, coord[1]), max(end, coord[2])
+            else:
+                coord = [chr, start, end]
+    if not coord:
+        raise Exception(f"Can't find the coordinate with the provided group id ({group_id})!")
+    strand = strand if strand and strand != '.' else None
+
+    coord[1], coord[2] = coord[1] - 100, coord[2] + 100
+    x, y = get_depths_from_gtf(gtf, coord, strand)
+
+    bam_dict, overlay_dict, color_dict,  = {"+": OrderedDict()}, OrderedDict(), OrderedDict()
+    label_dict, id_list = OrderedDict(), []
+    if strand == '-':
+        bam_dict['-'] = OrderedDict()
+    with open(meta_file, 'r') as f:
+        for line in f:
+            id, overlay_level = line.strip().split('\t')
+            id_list.append(id)
+            overlay_dict.setdefault(overlay_level, []).append(id)
+            label_dict[overlay_level] = overlay_level
+            color_dict.setdefault(overlay_level, overlay_level)
+            bam_dict[strand][id] = (x, y, [], [], [], [], [])
+
+    with open(tsv_file, 'r') as f:
+        lines = f.readlines()
+
+    for line in lines:
+        if line.startswith('#') or line.startswith('GeneName'):
+            continue
+        #GeneName    GroupID FeatureElement  FeatureType FeatureLabel    strand  p-value q-value dPSI    ReadCount1  ReadCount2  PSI
+        items = line.strip().split('\t')
+        _gene_name, _group_id, label, _strand = items[0], items[1], items[4], items[5]
+        chr, _start, _end = parse_coordinates(label)
+        if _group_id == group_id:
+            read_counts = [int(v) for v in items[9].split(',')]
+            psis = [float(v) for v in items[11].split(',')]
+            chr, start, end = coord
+            for i, count in enumerate(read_counts):
+                # dons, accs, yd, ya, counts = [], [], [], [], []
+                if count < min_coverage:
+                    continue
+
+                bam_dict[strand][id_list[i]][2].append(_start)
+                bam_dict[strand][id_list[i]][3].append(_end)
+                bam_dict[strand][id_list[i]][4].append( y[ _start - start - 1 ])
+                bam_dict[strand][id_list[i]][5].append( y[ _end - start + 1 ])
+                bam_dict[strand][id_list[i]][6].append(count)
+
+    palette = get_preset_palette()
+
+    # Find set of junctions to perform shrink
+    intersected_introns = None
+    if shrink:
+        introns = (v for vs in bam_dict[strand].values() for v in zip(vs[2], vs[3]))
+        intersected_introns = list(intersect_introns(introns))
+
+    # *** PLOT *** Define plot height
+    height, width, base_size = 3 * len(overlay_dict), 10, 14
+
+    # *** PLOT *** Start R script by loading libraries, initializing variables, etc...
+    R_script = setup_R_script(height, width, base_size, label_dict)
+    R_script += colorize(color_dict, palette)
+    R_script += make_R_lists(id_list, bam_dict[strand], overlay_dict, '', intersected_introns)
+
+    out_format = 'png'
+    out_file = 'sashimi.png'
+    resolution = 300
+    alpha = 0.5
+    height = 3
+    R_script += R_script_plot(out_file, out_format, resolution, '', '', height, 3, alpha)
+    if os.getenv('GGSASHIMI_DEBUG') is not None:
+        with open("R_script", 'w') as r:
+            r.write(R_script)
+    else:
+        plot(R_script)
+
+
+def get_depths_from_gtf(file, coord, strand):
+    chr, start, end = coord
+    x = [i for i in range(start, end)]
+    y = [0] * (end - start)
+    end = end - 1
+    with open(file) as f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            _chr, _, type, _start, _end, _, _strand, _, tags = line.strip().split("\t")
+            if _chr != chr:
+                continue
+            _start, _end = int(_start) - 1, int(_end)
+            if strand and strand != _strand:
+                continue
+            if type == "exon":
+                if (start < _start < end or start < _end < end):
+                    _start, _end = max(_start, start), min(end, _end)
+                    y[_start-start: _end-start] = [20] * (_end-_start)
+    return x, y
 
 def sashimi_plot_with_bams(bams, coordinate, gtf, shrink=False, strand="NONE", min_coverage=1):
-    strand_dict = {"plus": "+", "minus": "-"}
     palette = get_preset_palette()
 
     bam_dict, overlay_dict, color_dict,  = {"+": OrderedDict()}, OrderedDict(), OrderedDict()
@@ -14,13 +124,14 @@ def sashimi_plot_with_bams(bams, coordinate, gtf, shrink=False, strand="NONE", m
     if strand != "NONE":
         bam_dict["-"] = OrderedDict()
 
-    for id, bam, overlay_level in read_bam_input(bam):
+    for id, bam, overlay_level in read_bam_input(bams):
         if not os.path.isfile(bam):
             continue
         a, junctions = read_bam(bam, coordinate, strand)
         if a.keys() == ["+"] and all(map(lambda x: x == 0, list(a.values()[0]))):
             print("WARN: Sample {} has no reads in the specified area.".format(id))
             continue
+
         id_list.append(id)
         for _strand in a:
             bam_dict[_strand][id] = prepare_for_R(a[_strand], junctions[_strand], coordinate, min_coverage)
@@ -80,10 +191,10 @@ def sashimi_plot_with_bams(bams, coordinate, gtf, shrink=False, strand="NONE", m
             plot(R_script)
 
 
-def parse_coordinates(c):
-    c = c.replace(",", "")
-    chr = c.split(":")[0]
-    start, end = c.split(":")[1].split("-")
+def parse_coordinates(coord):
+    coord = coord.replace(",", "")
+    chr = coord.split(":")[0]
+    start, end = coord.split(":")[1].split("-")
     # Convert to 0-based
     start, end = int(start) - 1, int(end)
     return chr, start, end
@@ -132,17 +243,17 @@ def flip_read(s, samflag):
             return 0
 
 
-def read_bam(f, c, s):
-    _, start, end = parse_coordinates(c)
+def read_bam(file, coord, strand):
+    _, start, end = parse_coordinates(coord)
 
     # Initialize coverage array and junction dict
     a = {"+": [0] * (end - start)}
     junctions = {"+": OrderedDict()}
-    if s != "NONE":
+    if strand != "NONE":
         a["-"] = [0] * (end - start)
         junctions["-"] = OrderedDict()
 
-    p = sp.Popen("samtools view %s %s " % (f, c), shell=True, stdout=sp.PIPE)
+    p = sp.Popen("samtools view %s %s " % (file, coord), shell=True, stdout=sp.PIPE)
     for line in p.communicate()[0].decode('utf8').strip().split("\n"):
         if line:
             line_sp = line.strip().split("\t")
@@ -152,8 +263,8 @@ def read_bam(f, c, s):
             if any(map(lambda x: x in CIGAR, ["H", "P", "X", "="])):
                 continue
 
-            read_strand = ["+", "-"][flip_read(s, samflag) ^ bool(int(samflag) & 16)]
-            if s == "NONE": read_strand = "+"
+            read_strand = ["+", "-"][flip_read(strand, samflag) ^ bool(int(samflag) & 16)]
+            if strand == "NONE": read_strand = "+"
 
             CIGAR_lens = re.split("[MIDNS]", CIGAR)[:-1]
             CIGAR_ops = re.split("[0-9]+", CIGAR)[1:]

@@ -1,10 +1,10 @@
 from pathlib import Path
-import sys, argparse
+import sys, argparse, textwrap
 
 from convert_results_utils import convert_leafcutter_results, convert_rmats_results, convert_mntjulip_results, convert_majiq_results
 from venn_diagram_utils import plot_venn_diagram
 from heatmap_utils import plot_heatmap
-from sashimi_utils import sashimi_plot_with_bams
+from sashimi_utils import sashimi_plot_with_bams, sashimi_polt_without_bams
 
 
 def get_arguments():
@@ -25,7 +25,7 @@ def get_arguments():
     v_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
 
     h_parser = subparser.add_parser('heatmap', help='')
-    h_parser.add_argument('--tsv-file', type=str, help='The tsv file that contains the extracted results')
+    h_parser.add_argument('--tsv-file', type=str, help='The TSV file that contains the extracted results')
     h_parser.add_argument('--meta-file', type=str, help='A TAB separated file that contains the sample name and conditions')
     h_parser.add_argument('--p-value', type=float, default=0.05, help='Provide a p-value cutoff (default 0.05)')
     h_parser.add_argument('--q-value', type=float, default=1.0, help='Provide a q-value cutoff (default 1.0)')
@@ -36,13 +36,18 @@ def get_arguments():
     h_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
 
     s_parser = subparser.add_parser('sashimi', help='')
-    h_parser.add_argument('--bam-list', type=str, help='A BAM files list')
-    h_parser.add_argument('--coordinate', type=str, help='coordinate: e.g. chr1:123456-234567')
-    h_parser.add_argument('--gtf', type=str, help='A GTF file')
-    h_parser.add_argument('--shrink', action='store_true', default=False, help='shrink region.')
+    s_parser.add_argument('--bam-list', type=str, help='A BAM files list')
+    s_parser.add_argument('--tsv-file', type=str, help='The TSV file that contains the extracted results')
+    s_parser.add_argument('--meta-file', type=str, help='A TAB separated file that contains the sample name and conditions')
+    s_parser.add_argument('--coordinate', type=str, help='coordinate: e.g. chr1:123456-234567')
+    s_parser.add_argument('--gtf', type=str, help='A GTF file')
+    s_parser.add_argument('--shrink', action='store_true', default=False, help='shrink region.')
     s_parser.add_argument("--min-coverage", type=int, default=1, help='minimum coverage to ignore')
-    s_parser.add_argument("--strand", type=str, default="both",
-        help="Only for --strand other than 'NONE'. Choose which strand to plot: <both> <plus> <minus> [default=%(default)s]")
+    s_parser.add_argument("--group-id", type=str, help='specify the group id')
+    s_parser.add_argument("--strand", default="NONE", type=str,
+        help="Strand specificity: <NONE> <SENSE> <ANTISENSE> <MATE1_SENSE> <MATE2_SENSE> [default=%(default)s]")
+    s_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
+
     if len(sys.argv) < 2:
         parser.print_help(sys.stderr)
         sys.exit(1)
@@ -62,27 +67,35 @@ def run_convert_results_module(args):
     if args.majiq_dir:
         convert_majiq_results(Path(args.majiq_dir), out_dir)
     if not (args.mntjulip_dir or args.leafcutter_dir or args.rmat_dir):
-        raise Exception('Sould specify at least one of the path of a program result folder!')
+        raise Exception('Please specify at least a path to a program result folder!')
 
 
 def run_venn_diagram_module(args):
     if not args.tsv_file_list:
-        raise Exception('Please provide the list file that contains the path of the TSV result files')
+        raise Exception('Please provide the list file that contains the path of the TSV result files!')
 
     plot_venn_diagram(Path(args.tsv_file_list), Path(args.out_dir), args.p_value, args.q_value)
 
 
 def run_heatmap_module(args):
     if not args.tsv_file or not args.meta_file:
-        raise Exception('Please provide the list file that contains the path of the TSV result files')
+        raise Exception('Please provide the list file that contains the path of the TSV result files!')
     plot_heatmap(Path(args.tsv_file), Path(args.meta_file), Path(args.out_dir), args.p_value,
                  args.q_value, args.dpsi, args.fold_change, args.avg, args.aggregate)
 
 
 def run_sashimi_module(args):
-    if args.bam_list:
-        sashimi_plot_with_bams(args.bam_list, args.coordinates, args.gtf, args.shrink,
+    if args.bam_list and args.coordinate:
+        sashimi_plot_with_bams(args.bam_list, args.coordinate, args.gtf, args.shrink,
                            args.strand, args.min_coverage)
+    elif args.tsv_file and args.meta_file and args.gtf:
+        sashimi_polt_without_bams(args.tsv_file, args.meta_file, args.gtf, args.group_id, args.shrink, args.min_coverage)
+    else:
+        raise Exception(textwrap.dedent('''\
+    Please provide one of the two set of files,
+    (1) A bam file list and a coordinate (e.g. chr1:12345-12356)
+    (2) A TSV file that are generated by the 'convert-results' module, a meta file of sample names and conditions, a GTF reference genome file
+    '''))
 
 
 def main():
