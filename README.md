@@ -78,6 +78,28 @@ python3 jutils.py heatmap --tsv-file 'mntjulip_DSR_results.tsv' \
 python3 jutils.py heatmap --tsv-file 'mntjulip_DSA_results.tsv' \
                           --meta-file 'meta_file_4.tsv' \
                           --p-value 0.05 --q-value 0.05 --avg 200
+                          
+                          
+####### test Venn diagram
+python3 jutils.py convert-results --leafcutter-dir '~/leafcutter/' \
+                                  --mntjulip-dir '~/MntJULiP/' \
+                                  --rmat-dir '~/MATS_output/'
+
+python3 jutils.py venn-diagram --tsv-file-list tsv_file_list.txt
+
+
+####### test sashimi plot
+python3 jutils.py convert-results --mntjulip-dir '~/MntJULiP/'
+
+# sashimi plot with bams
+python3 jutils.py sashimi --bam-list 'bam_list.tsv' \
+                          --coordinate 'chr19:35744400-35745150'
+
+# sashimi plot without bams
+python3 jutils.py sashimi --meta-file 'meta_file.tsv' \
+                          --tsv-file 'mntjulip_DSR_results.tsv' \
+                          --group-id 'g001499' \
+                          --gtf 'gencode.v22.transcripts.gtf'
 ```
 
 ### <a name="inputoutput"></a> Input/Output
