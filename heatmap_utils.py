@@ -15,11 +15,13 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
 
     samples = []
     conditions = []
+    sample_cond_dict = {}
     with open(meta_file, 'r') as f:
         for line in f:
             sample, cond = line.strip().split('\t')
             samples.append(sample)
             conditions.append(cond)
+            sample_cond_dict[sample] = cond
 
     data_df = pd.read_csv(file, sep='\t', comment='#')
     data_df = data_df[data_df['p-value'] < p_value_threhold]
@@ -85,6 +87,7 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
                             yticklabels=1, xticklabels=1, figsize=(figureWidth, figureHeight), **clustermapParams)
 
     figure.ax_heatmap.set_facecolor("lightyellow")
+    set_xtick_text_colors(figure, sample_cond_dict, conditions)
     figure.savefig(out_dir / 'clustermap_Z.png')
     plt.close()
 
@@ -93,6 +96,7 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
                             yticklabels=1, xticklabels=1, figsize=(figureWidth, figureHeight), **clustermapParams)
 
     figure.ax_heatmap.set_facecolor("lightyellow")
+    set_xtick_text_colors(figure, sample_cond_dict, conditions)
     figure.savefig(out_dir / 'clustermap2_Z.png')
     plt.close()
 
@@ -102,6 +106,7 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
                                 yticklabels=1, xticklabels=1, figsize=(figureWidth, figureHeight), **clustermapParams)
 
         figure.ax_heatmap.set_facecolor("lightyellow")
+        set_xtick_text_colors(figure, sample_cond_dict, conditions)
         figure.savefig(out_dir / 'clustermap.png')
         plt.close()
 
@@ -110,5 +115,23 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
                                 yticklabels=1, xticklabels=1, figsize=(figureWidth, figureHeight), **clustermapParams)
 
         figure.ax_heatmap.set_facecolor("lightyellow")
+        set_xtick_text_colors(figure, sample_cond_dict, conditions)
         figure.savefig(out_dir / 'clustermap2.png')
         plt.close()
+
+
+def get_preset_palette():
+    # palette = "#ff0000", "#00ff00", "#0000ff", "#000000"
+    palette = '#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9', '#000000'
+    return palette
+
+
+def set_xtick_text_colors(figure, sample_cond_dict, conditions):
+    palette = get_preset_palette()
+    n = len(palette)
+    cond_color_dict = {cond: palette[i % n] for i, cond in enumerate(conditions)}
+    for tick_label in figure.ax_heatmap.axes.get_xticklabels():
+        cond = sample_cond_dict[tick_label.get_text()]
+        tick_label.set_color(cond_color_dict[cond])
+
+

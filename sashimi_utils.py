@@ -113,7 +113,7 @@ def get_depths_from_gtf(file, coord, strand):
             if type == "exon":
                 if (start < _start < end or start < _end < end):
                     _start, _end = max(_start, start), min(end, _end)
-                    y[_start-start: _end-start] = [20] * (_end-_start)
+                    y[_start-start: _end-start] = [1] * (_end-_start)
     return x, y
 
 def sashimi_plot_with_bams(bams, coordinate, gtf, shrink=False, strand="NONE", min_coverage=1):
@@ -386,7 +386,8 @@ def read_palette(f):
 
 
 def get_preset_palette():
-    palette = "#ff0000", "#00ff00", "#0000ff", "#000000"
+    # palette = "#ff0000", "#00ff00", "#0000ff", "#000000"
+    palette = '#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9', '#000000'
     return palette
 
 
