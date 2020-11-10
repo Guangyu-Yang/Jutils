@@ -2,7 +2,7 @@ import venn
 import matplotlib.pyplot as plt
 
 
-def plot_venn_diagram(list_file, out_dir, p_value_threhold, q_value_threhold):
+def plot_venn_diagram(list_file, out_dir, p_value_threhold, q_value_threhold, dpsi_threshold):
     files = []
     alias = []
     with open(list_file, 'r') as f:
@@ -27,8 +27,13 @@ def plot_venn_diagram(list_file, out_dir, p_value_threhold, q_value_threhold):
         names.append(lines[0].strip()[2:] if not alias else alias[i])
         for line in lines[2:]:
             items = line.split('\t')
-            gene_names, p_value, q_value = items[0], float(items[6]), float(items[7])
-            if p_value < p_value_threhold and p_value < q_value_threhold:
+            gene_names = items[0]
+            p_value, q_value, dpsi = items[6: 9]
+
+            p_value = 0 if p_value == '.' else float(p_value)
+            q_value = 0 if q_value == '.' else float(q_value)
+            dpsi = 1 if dpsi == '.' else float(dpsi)
+            if p_value < p_value_threhold and q_value < q_value_threhold and abs(dpsi) > dpsi_threshold:
                 for gene_name in gene_names.split('.'):
                     genes.add(gene_name)
         genes_list.append(genes)

@@ -3,7 +3,7 @@ import sys, re, copy, os, codecs
 from collections import OrderedDict
 
 
-def sashimi_polt_without_bams(tsv_file, meta_file, gtf, group_id, shrink=False, min_coverage=1):
+def sashimi_polt_without_bams(tsv_file, meta_file, gtf, group_id, out_dir, prefix, shrink, min_coverage):
     with open(tsv_file, 'r') as f:
         lines = f.readlines()
 
@@ -11,9 +11,11 @@ def sashimi_polt_without_bams(tsv_file, meta_file, gtf, group_id, shrink=False, 
     for line in lines:
         if line.startswith('#') or line.startswith('GeneName'):
             continue
-        #GeneName    GroupID FeatureElement  FeatureType FeatureLabel    strand  p-value q-value dPSI    ReadCount1  ReadCount2  PSI
+        # GeneName, GroupID, FeatureElement, FeatureType, FeatureLabel, strand, p-value, q-value, dPSI,
+        # ReadCount1, ReadCount2, PSI
         items = line.strip().split('\t')
         _gene_name, _group_id, label, _strand = items[0], items[1], items[4], items[5]
+        _strand = '+' if _strand == '.' else _strand
         if _group_id == group_id:
             strand = _strand
             chr, start, end = parse_coordinates(label)
@@ -22,7 +24,7 @@ def sashimi_polt_without_bams(tsv_file, meta_file, gtf, group_id, shrink=False, 
             else:
                 coord = [chr, start, end]
     if not coord:
-        raise Exception(f"Can't find the coordinate with the provided group id ({group_id})!")
+        raise Exception(f"Can't find the coordinate with the provided group ID {group_id}!")
     strand = strand if strand and strand != '.' else None
 
     coord[1], coord[2] = coord[1] - 100, coord[2] + 100
@@ -83,7 +85,7 @@ def sashimi_polt_without_bams(tsv_file, meta_file, gtf, group_id, shrink=False, 
     R_script += make_R_lists(id_list, bam_dict[strand], overlay_dict, '', intersected_introns)
 
     out_format = 'png'
-    out_file = 'sashimi.png'
+    out_file = out_dir / '_'.join(filter(None, [prefix, 'sashimi.png']))
     resolution = 300
     alpha = 0.5
     height = 3
@@ -116,7 +118,7 @@ def get_depths_from_gtf(file, coord, strand):
                     y[_start-start: _end-start] = [1] * (_end-_start)
     return x, y
 
-def sashimi_plot_with_bams(bams, coordinate, gtf, shrink=False, strand="NONE", min_coverage=1):
+def sashimi_plot_with_bams(bams, coordinate, gtf, out_dir, prefix, shrink, strand="NONE", min_coverage=1):
     palette = get_preset_palette()
 
     bam_dict, overlay_dict, color_dict,  = {"+": OrderedDict()}, OrderedDict(), OrderedDict()
@@ -179,7 +181,8 @@ def sashimi_plot_with_bams(bams, coordinate, gtf, shrink=False, strand="NONE", m
         R_script += make_R_lists(id_list, bam_dict[strand], overlay_dict, '', intersected_introns)
 
         out_format = 'png'
-        out_file = 'sashimi.png'
+
+        out_file = out_dir / '_'.join(filter(None, [prefix, 'sashimi.png']))
         resolution = 300
         alpha = 0.5
         height = 3
@@ -386,6 +389,7 @@ def read_palette(f):
 
 
 def get_preset_palette():
+    # color codes from, https://sashamaps.net/docs/resources/20-colors/
     # palette = "#ff0000", "#00ff00", "#0000ff", "#000000"
     palette = '#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9', '#000000'
     return palette

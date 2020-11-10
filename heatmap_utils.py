@@ -4,7 +4,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, dpsi_threshold, foldchange_threshold, avg_threshold, aggregate):
+def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold,
+                 dpsi_threshold, foldchange_threshold, avg_threshold, aggregate,
+                 method, metric, prefix):
     def process_group(x):
         start, end = float('inf'), 0
         for label in x['FeatureLabel']:
@@ -53,6 +55,7 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
             groups = new_data_df.groupby(['index'])
             data_df = groups.apply(lambda x: x.iloc[x['dPSI'].argmax()])
             data_df = data_df.drop(columns=['dPSI', 'index'])
+
     elif 'log2FoldChange' in original_columns:
         data_df = data_df[foldchange_threshold < abs(data_df['log2FoldChange'])]
         data_df = data_df[abs(data_df['log2FoldChange']) < float('inf')]
@@ -79,8 +82,9 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
     if figureWidth < 15:
         figureWidth = 15
 
-    method = 'average'
-    metric = 'braycurtis'
+    strings = [prefix]
+    if aggregate:
+        strings.append('aggregated')
 
     figure = sns.clustermap(data_df, cmap="RdBu_r", col_cluster=False, z_score=0, vmin=-5, vmax=5,
                             metric=metric, method=method, mask=mask,
@@ -88,7 +92,8 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
 
     figure.ax_heatmap.set_facecolor("lightyellow")
     set_xtick_text_colors(figure, sample_cond_dict, conditions)
-    figure.savefig(out_dir / 'clustermap_Z.png')
+
+    figure.savefig(out_dir / '_'.join(filter(None, strings + ['clustermap_Z.png'])))
     plt.close()
 
     figure = sns.clustermap(data_df, cmap="RdBu_r", z_score=0, vmin=-5, vmax=5,
@@ -97,7 +102,7 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
 
     figure.ax_heatmap.set_facecolor("lightyellow")
     set_xtick_text_colors(figure, sample_cond_dict, conditions)
-    figure.savefig(out_dir / 'clustermap2_Z.png')
+    figure.savefig(out_dir / '_'.join(filter(None, strings + ['clustermap2_Z.png'])))
     plt.close()
 
     if 'dPSI' in original_columns:
@@ -107,7 +112,7 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
 
         figure.ax_heatmap.set_facecolor("lightyellow")
         set_xtick_text_colors(figure, sample_cond_dict, conditions)
-        figure.savefig(out_dir / 'clustermap.png')
+        figure.savefig(out_dir / '_'.join(filter(None, strings + ['clustermap.png'])))
         plt.close()
 
         figure = sns.clustermap(data_df, cmap=sns.cm.rocket_r,
@@ -116,7 +121,7 @@ def plot_heatmap(file, meta_file, out_dir, p_value_threhold, q_value_threhold, d
 
         figure.ax_heatmap.set_facecolor("lightyellow")
         set_xtick_text_colors(figure, sample_cond_dict, conditions)
-        figure.savefig(out_dir / 'clustermap2.png')
+        figure.savefig(out_dir / '_'.join(filter(None, strings + ['clustermap2.png'])))
         plt.close()
 
 
@@ -133,5 +138,4 @@ def set_xtick_text_colors(figure, sample_cond_dict, conditions):
     for tick_label in figure.ax_heatmap.axes.get_xticklabels():
         cond = sample_cond_dict[tick_label.get_text()]
         tick_label.set_color(cond_color_dict[cond])
-
 

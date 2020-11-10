@@ -23,6 +23,8 @@ def get_arguments():
     v_parser.add_argument('--p-value', type=float, default=0.05, help='Provide a p-value cutoff (default 0.05)')
     v_parser.add_argument('--q-value', type=float, default=1.0, help='Provide a q-value cutoff (default 1.0)')
     v_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
+    v_parser.add_argument('--dpsi', type=float, default=0.05, help='Provide a |dPSI| cutoff (default 0.05)')
+    v_parser.add_argument('--prefix', type=str, default='', help='Add prefix to the output file')
 
     h_parser = subparser.add_parser('heatmap', help='')
     h_parser.add_argument('--tsv-file', type=str, help='The TSV file that contains the extracted results')
@@ -34,6 +36,11 @@ def get_arguments():
     h_parser.add_argument('--fold-change', type=float, default=0., help='Provide a |dPSI| cutoff (default 0.)')
     h_parser.add_argument('--aggregate', action='store_true', default=False, help='Debug mode for showing more information.')
     h_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
+    h_parser.add_argument('--prefix', type=str, default='', help='Add prefix to the output file')
+    h_parser.add_argument('--method', type=str, default='average',
+                        help="Linkage method to use for calculating clusters. choose from 'single', 'complete', 'average', 'weighted', 'centroid', 'median', 'ward' (default 'average')")
+    h_parser.add_argument('--metric', type=str, default='braycurtis',
+                        help="The distance metric to use. The distance function can be ‘braycurtis’, ‘canberra’, ‘chebyshev’, ‘cityblock’, ‘correlation’, ‘cosine’, ‘dice’, ‘euclidean’, ‘hamming’, ‘jaccard’, ‘jensenshannon’, ‘kulsinski’, ‘mahalanobis’, ‘matching’, ‘minkowski’, ‘rogerstanimoto’, ‘russellrao’, ‘seuclidean’, ‘sokalmichener’, ‘sokalsneath’, ‘sqeuclidean’, ‘yule’ (default 'braycurtis')")
 
     s_parser = subparser.add_parser('sashimi', help='')
     s_parser.add_argument('--bam-list', type=str, help='A BAM files list')
@@ -47,6 +54,7 @@ def get_arguments():
     s_parser.add_argument("--strand", default="NONE", type=str,
         help="Strand specificity: <NONE> <SENSE> <ANTISENSE> <MATE1_SENSE> <MATE2_SENSE> [default=%(default)s]")
     s_parser.add_argument('--out-dir', type=str, default='./out', help='The output directory')
+    s_parser.add_argument('--prefix', type=str, default='', help='Add prefix to the output file')
 
     if len(sys.argv) < 2:
         parser.print_help(sys.stderr)
@@ -74,22 +82,24 @@ def run_venn_diagram_module(args):
     if not args.tsv_file_list:
         raise Exception('Please provide the list file that contains the path of the TSV result files!')
 
-    plot_venn_diagram(Path(args.tsv_file_list), Path(args.out_dir), args.p_value, args.q_value)
+    plot_venn_diagram(Path(args.tsv_file_list), Path(args.out_dir), args.p_value, args.q_value, args.dpsi)
 
 
 def run_heatmap_module(args):
     if not args.tsv_file or not args.meta_file:
         raise Exception('Please provide the list file that contains the path of the TSV result files!')
     plot_heatmap(Path(args.tsv_file), Path(args.meta_file), Path(args.out_dir), args.p_value,
-                 args.q_value, args.dpsi, args.fold_change, args.avg, args.aggregate)
+                 args.q_value, args.dpsi, args.fold_change, args.avg, args.aggregate,
+                 args.method, args.metric, args.prefix)
 
 
 def run_sashimi_module(args):
     if args.bam_list and args.coordinate:
-        sashimi_plot_with_bams(args.bam_list, args.coordinate, args.gtf, args.shrink,
+        sashimi_plot_with_bams(args.bam_list, args.coordinate, args.gtf, Path(args.out_dir), args.prefix, args.shrink,
                            args.strand, args.min_coverage)
     elif args.tsv_file and args.meta_file and args.gtf:
-        sashimi_polt_without_bams(args.tsv_file, args.meta_file, args.gtf, args.group_id, args.shrink, args.min_coverage)
+        sashimi_polt_without_bams(args.tsv_file, args.meta_file, args.gtf, args.group_id,
+                                  Path(args.out_dir), args.prefix, args.shrink, args.min_coverage)
     else:
         raise Exception(textwrap.dedent('''\
     Please provide one of the two set of files,

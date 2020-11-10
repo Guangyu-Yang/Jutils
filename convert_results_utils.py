@@ -42,7 +42,7 @@ def convert_majiq_results(data_dir, out_dir):
             intron_info_dict[(_chr, start, end, lsv_id)] = f'{gene_name}\t{lsv_id}\ti{i:03d}\tintron\t{_chr}:{start}-{end}\t{strand}\t.\t.\t{dpsi:.6g}\t.\t.\t.\t{psi1}\t{psi2}'
             i += 1
 
-    out_buffer = 'GeneName\tGroupID\tFeatureElement\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\t' + '\t'.join(conds)
+    out_buffer = 'GeneName\tGroupID\tFeatureID\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\t' + '\t'.join(conds)
     file = out_dir / 'majiq_results.tsv'
     with open(file, 'w') as f:
         f.write('# majiq\n')
@@ -127,7 +127,7 @@ def convert_leafcutter_results(data_dir, out_dir):
 def convert_rmats_results(data_dir, out_dir):
     data_dir, out_dir = Path(data_dir), Path(out_dir)
     for file_type in ['ReadsOnTargetAndJunctionCounts', 'JunctionCountOnly']:
-        out_buffer = 'GeneName\tGroupID\tFeatureElement\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\n'
+        out_buffer = 'GeneName\tGroupID\tFeatureID\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\n'
         #ID    GeneID   geneSymbol  chr  strand  exonStart_0base  exonEnd   upstreamES  upstreamEE  downstreamES  downstreamEE  ID    IC_SAMPLE_1
         file = data_dir / f'SE.MATS.{file_type}.txt'
         with open(file, 'r') as f:
@@ -278,7 +278,7 @@ def convert_mntjulip_DSR_results(data_dir, out_dir):
             intron_info_dict[intron_info] += f"\t{intron_counts_dict[intron]}\t.\t{custom_divide(intron_counts_dict[intron], sums)}\t"
             intron_info_dict[intron_info] += '\t'.join(intron_info_psis_dict[intron_info])
 
-    out_buffer = 'GeneName\tGroupID\tFeatureElement\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\t' + '\t'.join(conds)
+    out_buffer = 'GeneName\tGroupID\tFeatureID\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\t' + '\t'.join(conds)
     file = out_dir / 'mntjulip_DSR_results.tsv'
     with open(file, 'w') as f:
         f.write('# mntjulip DSR\n')
@@ -335,7 +335,7 @@ def convert_mntjulip_DSA_results(data_dir, out_dir):
             intron_info_dict[(intron, strand)] += ','.join(items[6:]) + '\t.\t.\t'
             intron_info_dict[(intron, strand)] += '\t'.join(intron_means_dict[(intron, strand)])
 
-    out_buffer = f'GeneName\tGroupID\tFeatureElement\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tlog2FoldChange\tReadCount1\tReadCount2\tPSI\t' + '\t'.join(conds)
+    out_buffer = f'GeneName\tGroupID\tFeatureID\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tlog2FoldChange\tReadCount1\tReadCount2\tPSI\t' + '\t'.join(conds)
     file = out_dir / 'mntjulip_DSA_results.tsv'
     with open(file, 'w') as f:
         f.write('# mntjulip DSA\n')
