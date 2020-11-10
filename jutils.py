@@ -40,7 +40,7 @@ def get_arguments():
     h_parser.add_argument('--method', type=str, default='average',
                         help="Linkage method to use for calculating clusters. choose from 'single', 'complete', 'average', 'weighted', 'centroid', 'median', 'ward' (default 'average')")
     h_parser.add_argument('--metric', type=str, default='braycurtis',
-                        help="The distance metric to use. The distance function can be ‘braycurtis’, ‘canberra’, ‘chebyshev’, ‘cityblock’, ‘correlation’, ‘cosine’, ‘dice’, ‘euclidean’, ‘hamming’, ‘jaccard’, ‘jensenshannon’, ‘kulsinski’, ‘mahalanobis’, ‘matching’, ‘minkowski’, ‘rogerstanimoto’, ‘russellrao’, ‘seuclidean’, ‘sokalmichener’, ‘sokalsneath’, ‘sqeuclidean’, ‘yule’ (default 'braycurtis')")
+                        help="The distance metric to use. The distance function can be 'braycurtis', 'canberra', 'chebyshev', 'cityblock', 'correlation', 'cosine', 'dice', 'euclidean', 'hamming', 'jaccard', 'jensenshannon', 'kulsinski', 'mahalanobis', 'matching', 'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule' (default 'braycurtis')")
 
     s_parser = subparser.add_parser('sashimi', help='')
     s_parser.add_argument('--bam-list', type=str, help='A BAM files list')
