@@ -4,7 +4,7 @@ Jutils (alpha_1.0) is a visualization toolkit for alternative splicing events. J
 
 Described in:
 
-      Yang G, Cope L, He Z, and Florea L. Jutils: A visualization toolkit for differential alternative splicing events, *Submitted*.
+   Yang G, Cope L, He Z, and Florea L. Jutils: A visualization toolkit for differential alternative splicing events, *Submitted*.
 
 ```
 Copyright (C) 2020-2021, and GNU GPL v3.0, by Guangyu Yang, Liliana Florea
