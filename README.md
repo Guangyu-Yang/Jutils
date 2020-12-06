@@ -142,7 +142,7 @@ python3 jutils.py heatmap --tsv-file 'mntjulip_DSA_results.tsv' \
                           --p-value 0.05 --q-value 0.05 --avg 200 --fold-change 3
 ```
 
-_Multi-way comparison_
+_Multi-way comparison:_
 ```
 generate TSV file from MntJULiP output
 result_dir='path/to/MntJULiP_results_dir'
