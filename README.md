@@ -231,10 +231,10 @@ sample3  case
 sample4  case
 ```
 #### The bam_list file
-The bam list file contains the full paths to the BAM alignment files used by the (traditional) sashimi visualization:
+The bam list file is a TAB ('\t') separated file containing the full path to the BAM alignment file, along with the sample name and condition, as used by the (traditional) sashimi visualization:
 ```
-/path/to/BAM_1
-/path/to/BAM_2
+sample1   /path/to/BAM_1   ctrl
+sample2   /path/to/BAM_2   case
 ...
 ```
 #### The tsv_file_list
