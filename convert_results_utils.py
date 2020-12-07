@@ -127,7 +127,7 @@ def convert_leafcutter_results(data_dir, out_dir):
 def convert_rmats_results(data_dir, out_dir):
     data_dir, out_dir = Path(data_dir), Path(out_dir)
     for file_type in ['ReadsOnTargetAndJunctionCounts', 'JunctionCountOnly']:
-        out_buffer = 'GeneName\tGroupID\tFeatureID\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\n'
+        out_buffer = 'GeneName\tGroupID\tFeatureID\tFeatureType\tFeatureLabel\tstrand\tp-value\tq-value\tdPSI\tReadCount1\tReadCount2\tPSI\tpsi(cond1)\tpsi(cond2)\n'
         #ID    GeneID   geneSymbol  chr  strand  exonStart_0base  exonEnd   upstreamES  upstreamEE  downstreamES  downstreamEE  ID    IC_SAMPLE_1
         file = data_dir / f'SE.MATS.{file_type}.txt'
         with open(file, 'r') as f:
@@ -138,7 +138,7 @@ def convert_rmats_results(data_dir, out_dir):
             label = f'{_chr}:{uee},{es}-{ee},{des}'
             p_value, q_value, dpsi = f'{float(p_value):.6g}', f'{float(q_value):.6g}', f'{float(dpsi):.6g}'
             gene_name = gene_name[1:-1]
-            out_buffer += f'{gene_name}\t.\t{fid}\tSE\t{label}\t{strand}\t{p_value}\t{q_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\n'
+            out_buffer += f'{gene_name}\t.\t{fid}\tSE\t{label}\t{strand}\t{p_value}\t{q_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\t.\t.\n'
 
         file = data_dir / f'RI.MATS.{file_type}.txt'
         with open(file, 'r') as f:
@@ -149,7 +149,7 @@ def convert_rmats_results(data_dir, out_dir):
             label = f'{_chr}:{ues}-{uee}:{des}-{dee}'
             p_value, q_value, dpsi = f'{float(p_value):.6g}', f'{float(q_value):.6g}', f'{float(dpsi):.6g}'
             gene_name = gene_name[1:-1]
-            out_buffer += f'{gene_name}\t.\t{fid}\tRI\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\n'
+            out_buffer += f'{gene_name}\t.\t{fid}\tRI\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\t.\t.\n'
 
         file = data_dir / f'MXE.MATS.{file_type}.txt'
         with open(file, 'r') as f:
@@ -160,7 +160,7 @@ def convert_rmats_results(data_dir, out_dir):
             label = f'{_chr}:{uee},{es1}-{ee1}:{es2}-{ee2},{des}'
             p_value, q_value, dpsi = f'{float(p_value):.6g}', f'{float(q_value):.6g}', f'{float(dpsi):.6g}'
             gene_name = gene_name[1:-1]
-            out_buffer += f'{gene_name}\t.\t{fid}\tMXE\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\n'
+            out_buffer += f'{gene_name}\t.\t{fid}\tMXE\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\t.\t.\n'
 
         file = data_dir / f'A5SS.MATS.{file_type}.txt'
         with open(file, 'r') as f:
@@ -171,7 +171,7 @@ def convert_rmats_results(data_dir, out_dir):
             label = f'{_chr}:{les}-{lee}:{ses}-{see},{fes}'
             p_value, q_value, dpsi = f'{float(p_value):.6g}', f'{float(q_value):.6g}', f'{float(dpsi):.6g}'
             gene_name = gene_name[1:-1]
-            out_buffer += f'{gene_name}\t.\t{fid}\tA5SS\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\n'
+            out_buffer += f'{gene_name}\t.\t{fid}\tA5SS\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\t.\t.\n'
 
         file = data_dir / f'A3SS.MATS.{file_type}.txt'
         with open(file, 'r') as f:
@@ -182,7 +182,7 @@ def convert_rmats_results(data_dir, out_dir):
             label = f'{_chr}:{fee},{les}-{lee}:{ses}-{see}'
             p_value, q_value, dpsi = f'{float(p_value):.6g}', f'{float(q_value):.6g}', f'{float(dpsi):.6g}'
             gene_name = gene_name[1:-1]
-            out_buffer += f'{gene_name}\t.\t{fid}\tA3SS\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\n'
+            out_buffer += f'{gene_name}\t.\t{fid}\tA3SS\t{label}\t{strand}\t{p_value}\t{p_value}\t{dpsi}\t{ic1},{ic2}\t{sc1},{sc2}\t{icl1},{icl2}\t.\t.\n'
 
         file = out_dir / f'rmats_{file_type}_results.tsv'
         with open(file, 'w') as f:
